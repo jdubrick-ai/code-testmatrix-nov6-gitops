@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dsp-clone-job-code-testmatrix-nov6-gitops
+spec:  
+  template:         
+    metadata:
+      name: dsp-clone-job-code-testmatrix-nov6-gitops
+    spec:  
+      serviceAccountName: code-testmatrix-nov6-dsp-job
+      containers:
+      - name: initialize-dsp
+        image: quay.io/redhat-ai-dev/utils:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          oc wait -l statefulset=code-testmatrix-nov6-notebook --for=condition=ready pod --timeout=300s
+          oc exec  StatefulSet/code-testmatrix-nov6-notebook -- git clone https://github.com/jdubrick-ai/code-testmatrix-nov6
+      restartPolicy: Never
